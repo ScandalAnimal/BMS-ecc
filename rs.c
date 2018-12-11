@@ -48,12 +48,12 @@
 
 #include <math.h>
 #include <stdio.h>
-#define mm  4           /* RS code over c - change to suit */
-#define CODEWORD_LENGTH  15          /* CODEWORD_LENGTH=2**mm -1   length of codeword */
-#define CODEWORD_PARITY  3           /* number of errors that can be corrected */
-#define CODEWORD_DATA  9           /* CODEWORD_DATA = CODEWORD_LENGTH-2*CODEWORD_PARITY  */
+#define mm 8           /* RS code over c - change to suit */
+#define CODEWORD_LENGTH  255          /* CODEWORD_LENGTH=2**mm -1   length of codeword */
+#define CODEWORD_PARITY 16           /* number of errors that can be corrected */
+#define CODEWORD_DATA 223           /* CODEWORD_DATA = CODEWORD_LENGTH-2*CODEWORD_PARITY  */
 
-int pp [mm+1] = { 1, 1, 0, 0, 1} ; /* specify irreducible polynomial coeffts */
+int pp [mm+1] = { 1, 0, 1, 0, 0, 1, 1, 0, 1} ; /* specify irreducible polynomial coeffts */
 int alpha_to [CODEWORD_LENGTH+1], index_of [CODEWORD_LENGTH+1], gg [CODEWORD_LENGTH-CODEWORD_DATA+1] ;
 int recd [CODEWORD_LENGTH], data [CODEWORD_DATA], bb [CODEWORD_LENGTH-CODEWORD_DATA] ;
 

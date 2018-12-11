@@ -69,7 +69,11 @@ int main(int argc, char** argv) {
         input_stream.read(buffer[iterator], CODEWORD_DATA);
         for (int i = 0; i < CODEWORD_DATA; i++) {
             data[i] = buffer[iterator][i];
-            printf("%d ", buffer[iterator][i]);
+            int x = (int)data[i];
+            if (x < 0) {
+                data[i] += 256;
+            }
+            printf("%d ", data[i]);
         }
         encode_rs();
 
@@ -80,6 +84,9 @@ int main(int argc, char** argv) {
         for (int i = 0; i < CODEWORD_DATA; i++) {
             buffer[iterator][i+CODEWORD_LENGTH-CODEWORD_DATA] = data[i];
         }
+        // for (int i = 0; i < CODEWORD_LENGTH; i++) {
+           // buffer[iterator][i] = index_of[(int)buffer[iterator][i]];
+        // }
 
         printf("\n");
         iterator++;
@@ -112,11 +119,15 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < CODEWORD_LENGTH; i++){
         for (int j = 0; j < codewords; j++) {
-            printf("%d ", buffer[j][i]);
+            // printf("%d ", buffer[j][i]);
+            int x = (int)buffer[j][i];
+            if (x < 0) {
+                buffer[j][i] += 256;
+            }
             output_buffer[j] = buffer[j][i];
         }
         output_stream.write(output_buffer, codewords);
-        printf("\n");
+        // printf("\n");
     }
 
     for (int i = 0; i < codewords; ++i) {
