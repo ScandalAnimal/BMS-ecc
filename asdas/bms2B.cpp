@@ -33,7 +33,6 @@ int main(int argc, char** argv) {
     input_length = input_stream.tellg();
     input_stream.seekg(0, input_stream.beg);
 
-
     ofstream output_stream;
     output_stream.open(output_file_name, ios::binary);
 
@@ -42,44 +41,55 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    char *output_buffer = new char[CODEWORD_LENGTH];
-
     printf("LENGTH: %d\n", input_length);
 
     int codewords = (input_length / CODEWORD_LENGTH) + 1;
-    int mod = 0;
+    int mod = (input_length % CODEWORD_LENGTH);
 
     char **buffer = new char*[codewords];
     for (int i = 0; i < codewords; ++i) {
-        buffer[i] = new char[CODEWORD_LENGTH];
+        buffer[i] = new char[CODEWORD_LENGTH + 1];
     }
 
     char *input_buffer = new char[codewords];
+    char *output_buffer = new char[CODEWORD_LENGTH];
 
-    streamsize readNum = 0;
     int iterator = 0;
     while (!input_stream.eof()) {
 
-        for (int i = 0; i < CODEWORD_LENGTH; i++) {
-           buffer[iterator][i] = '\0';
+        for (int i = 0; i < codewords; i++) {
+           input_buffer[i] = '\0';
         }
 
-        input_stream.read(buffer[iterator], CODEWORD_LENGTH);
-        mod = input_stream.gcount();
-        printf("mode: %d\n", mod);
-        // if (input_stream.gcount() != 0) {
-            // for (int i = 0; i < CODEWORD_LENGTH; i++) {
+        if (iterator < mod) {
+            input_stream.read(input_buffer, codewords);
+        }
+        else {
+             input_stream.read(input_buffer, codewords - 1);   
+        }
+        streamsize readNum = input_stream.gcount();
+        // printf("READNUM: %d\n", readNum);
+        if (readNum != 0) {
+            for (int i = 0; i < codewords; i++) {
 
-                // buffer[iterator][i] = input_buffer[i];
+                buffer[i][iterator] = input_buffer[i];
                 // printf("%02X ", buffer[i][iterator]);
-                // readNum = input_stream.gcount();
-            // }
-        // }
-        // printf("READNUM, mod %d %d\n", readNum, mod);
+
+            }
+        }
+        // printf("***\n");
 
         iterator++;
     }
-        // printf("^^^^^^^^^^^^");
+    
+    for (int i = 0; i < codewords; i++){
+        for (int j = 0; j < CODEWORD_LENGTH; j++) {
+            printf("%02X ", buffer[i][j]);
+        }
+        printf("*************\n");
+    }
+
+        // printf("^^^^^^^^^^^^\n");
 
     generate_gf();
     // printf("Look-up tables for GF(2**%2d)\n",mm) ;
@@ -98,6 +108,11 @@ int main(int argc, char** argv) {
             if (x < 0) {
                 recd[j] += 256;
             }
+//            // printf("(%d %02X# ", j, recd[j]) ;
+//                // if (j % 5 == 0) {
+ //                  // printf("\n");
+//                // }
+//            printf("%02X ", recd[j]);
             // printf("%d ", recd[j]);
             // output_buffer[j] = buffer[j][i];
         }
@@ -113,60 +128,57 @@ int main(int argc, char** argv) {
         //     // output_buffer[j] = buffer[j][i];
         // }
         decode_rs();
-
-
-        // if (i == codewords - 1) {
-        //     int it = 0;
-        //     for (int x=CODEWORD_LENGTH-CODEWORD_DATA; x<CODEWORD_LENGTH; x++) {
-        //         printf("%d ", recd[x]) ;
-        //         output_buffer[it] = recd[x];
-        //         it++; 
-        //     }
-        //     printf("READNUM %d\n", readNum);
-        //     printf("DATA: %d\n", CODEWORD_DATA);
-        //     output_stream.write(output_buffer, readNum);    
+        // for (int x=0; x<CODEWORD_LENGTH-CODEWORD_DATA; x++) {
+            // printf("%3d    %3d      %3d\n",x, bb[x], recd[x]) ;
         // }
-        // else {
-
         if (i == codewords - 1) {
             int it = 0;
-            for (int x=CODEWORD_LENGTH-CODEWORD_DATA; x<mod; x++) {
-                printf("(%d %02X) ", x, recd[x]) ;
+            for (int x=CODEWORD_LENGTH-CODEWORD_DATA; x<CODEWORD_DATA + 2; x++) {
+               // printf("(%d %d)# ", x, recd[x]) ;
+               //  if (x % 5 == 0) {
+               //      printf("\n");
+               //  }
+                            // printf("%02X ", recd[x]);
+
                 output_buffer[it] = recd[x];
-                it++; 
-            }
-            output_stream.write(output_buffer, mod - (2* CODEWORD_PARITY));           
+                it++;
+            } 
+            output_stream.write(output_buffer, it);           
         }
         else {
             int it = 0;
+            // for (int x=CODEWORD_LENGTH-CODEWORD_DATA; x<CODEWORD_DATA + CODEWORD_PARITY + 1; x++) {
             for (int x=CODEWORD_LENGTH-CODEWORD_DATA; x<CODEWORD_LENGTH; x++) {
-                printf("(%d %02X) ", x, recd[x]) ;
-                output_buffer[it] = recd[x];
-                it++; 
-            }    
-            output_stream.write(output_buffer, CODEWORD_DATA);           
+                
+                            // printf("%02X ", recd[x]);
 
+                output_buffer[it] = recd[x];
+                // printf("(%d %d)# ", it, output_buffer[it]) ;
+                // if (x % 5 == 0) {
+                //     printf("\n");
+                // }
+                it++;
+            }   
+            output_stream.write(output_buffer, it);
         }
-        
-            // output_stream.write(output_buffer, CODEWORD_DATA);           
-        // }
 
         // output_stream.write(output_buffer, codewords);
-        // printf("*****\n");
+//        printf("codewords: %d\n", codewords);
+//        printf("\n\n");
 
     }
 
-    // printf("CW %d\n", codewords);
-    printf("mod: %d\n", mod);
+
 
     for (int i = 0; i < codewords; ++i) {
-        delete[] buffer[i];
+        // delete[] buffer[i];
     }
-    delete[] buffer;
-    delete[] input_buffer;
+    // delete[] buffer;
+    // delete[] input_buffer;
 
-    input_stream.close();    
-    output_stream.close();    
+//    printf("mod %d\n", mod);
+    input_stream.close(); 
+    output_stream.close();   
     return EXIT_SUCCESS;
 }
 

@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
     printf("LENGTH: %d\n", input_length);
 
     int codewords = (input_length / CODEWORD_DATA) + 1;
+    int mod = (input_length % CODEWORD_DATA);
 
     char **buffer = new char*[codewords];
     for (int i = 0; i < codewords; ++i) {
@@ -54,7 +55,9 @@ int main(int argc, char** argv) {
     }
 
     char *output_buffer = new char[codewords];
-    streamsize mod = 0;
+
+    streamsize last_streamsize = 0;
+
     /* generate the Galois Field GF(2**mm) */
     generate_gf();
     gen_poly();
@@ -67,15 +70,14 @@ int main(int argc, char** argv) {
         }
 
         input_stream.read(buffer[iterator], CODEWORD_DATA);
-        mod = input_stream.gcount();
-        printf("mode: %d\n", mod);
+        last_streamsize = input_stream.gcount();
         for (int i = 0; i < CODEWORD_DATA; i++) {
             data[i] = buffer[iterator][i];
             int x = (int)data[i];
             if (x < 0) {
                 data[i] += 256;
             }
-            // printf("%d ", data[i]);
+            printf("%d ", data[i]);
         }
         encode_rs();
 
@@ -90,11 +92,11 @@ int main(int argc, char** argv) {
            // buffer[iterator][i] = index_of[(int)buffer[iterator][i]];
         // }
 
-        // printf("\n");
+        printf("\n");
         iterator++;
     }
-
-        // printf("******\n");
+    printf("READNUM: %d\n", last_streamsize);
+    printf("******\n");
 
 
 // /* if you want to test the program, corrupt some of the elements of recd[]
@@ -118,47 +120,53 @@ int main(int argc, char** argv) {
 //     printf("%3d    %3d      %3d\n",i, data[i-nn+kk], recd[i]) ;
 // }
 
-
-    // for (int i = 0; i < CODEWORD_LENGTH; i++){
-    //     for (int j = 0; j < codewords; j++) {
-    //         // printf("%d ", buffer[j][i]);
-    //         int x = (int)buffer[j][i];
-    //         if (x < 0) {
-    //             buffer[j][i] += 256;
-    //         }
-    //         output_buffer[j] = buffer[j][i];
-    //     }
-    //     output_stream.write(output_buffer, codewords);
-    //     // printf("\n");
-    // }
-
-    for (int i = 0; i < codewords; i++){
-        for (int j = 0; j < CODEWORD_LENGTH; j++) {
-            if (i == codewords - 1) {
-                if (j < mod + (CODEWORD_PARITY * 2)) {
-                    // printf("(%d %02X) ", j, buffer[i][j]);
-                    int x = (int)buffer[i][j];
-                    if (x < 0) {
-                        buffer[i][j] += 256;
-                    }
-                    output_buffer[j] = buffer[i][j];
-                }
+    for (int i = 0; i < CODEWORD_LENGTH; i++){
+        for (int j = 0; j < codewords; j++) {
+            int x = (int)buffer[j][i];
+            if (x < 0) {
+                buffer[j][i] += 256;
             }
-            else {
-                output_buffer[j] = buffer[i][j];
-                // printf("%02X ", buffer[i][j]);
-            }
+            output_buffer[j] = buffer[j][i];
+            printf("%d ", output_buffer[j]);
         }
-        if (i == codewords - 1) {
-            output_stream.write(output_buffer, mod + (CODEWORD_PARITY * 2));
-        }
-        else {
-            output_stream.write(output_buffer, CODEWORD_LENGTH);
-        }
-        // printf("*************\n");
+        printf("\n");
     }
+    printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+    for (int i = 0; i < CODEWORD_LENGTH; i++){
+        for (int j = 0; j < codewords; j++) {
+            // printf("%d ", buffer[j][i]);
+            // int x = (int)buffer[j][i];
+            // if (x < 0) {
+            //     buffer[j][i] += 256;
+            // }
+            output_buffer[j] = buffer[j][i];
+        }
+        // if (i > CODEWORD_DATA) {
 
-    // printf("mod: %d\n", mod);
+        //     for (int x = 0; x < codewords - 1; x++)
+        //     {
+        //         printf("##%d %02X ", i, output_buffer[x]);
+        //     }
+        //     output_stream.write(output_buffer, codewords - 1);
+        // }
+        // else {
+            // for (int x = 0; x < codewords; x++)
+            // {
+            //     printf("%d %02X ", i, output_buffer[x]);
+            // }
+            output_stream.write(output_buffer, codewords);
+        // }
+        // printf("\n");
+    }
+        printf("MOD: %d\n", mod);
+        printf("CODEWORDS: %d\n", codewords);
+
+    // for (int i = 0; i < codewords; i++){
+    //     for (int j = 0; j < CODEWORD_LENGTH; j++) {
+    //         printf("%02X ", buffer[i][j]);
+    //     }
+    //     printf("*************\n");
+    // }
 
     for (int i = 0; i < codewords; ++i) {
         delete[] buffer[i];
@@ -167,6 +175,7 @@ int main(int argc, char** argv) {
     delete[] output_buffer;
 
     input_stream.close();
+    output_stream.close();
 
     return EXIT_SUCCESS;
 
