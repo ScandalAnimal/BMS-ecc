@@ -1,14 +1,15 @@
-CC=g++
-CFLAGS=-std=c++11 -Wall -pedantic -O2
+.PHONY: data prepare test clean
 
-all: bms2A bms2B
+data:
+	python generate_data.py
 
+prepare:
+	cd src/ && make
 
-bms2A: bms2A.cpp
-	$(CC) $(CFLAGS) $^ -o $@ 
-
-bms2B: bms2B.cpp
-	$(CC) $(CFLAGS) $^ -o $@ 
+test:
+	python run_tests.py
 
 clean:
-	rm -f *.o bms2A bms2B
+	rm -rf data/*.out
+	rm -rf data/*.ok
+	rm -rf data/*.err
