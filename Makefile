@@ -1,15 +1,11 @@
-.PHONY: data prepare test clean
+CC = gcc
+CFLAGS = -std=c99 -Wall -pedantic -I..
 
-data:
-	python generate_data.py
 
-prepare:
-	cd src/ && make
-
-test:
-	python run_tests.py
+all:bms2A.o bms2B.o
+	gcc -o bms2A bms2A.o -L. -lecc -lm
+	gcc -o bms2B bms2B.o -L. -lecc -lm
 
 clean:
-	rm -rf data/*.out
-	rm -rf data/*.ok
-	rm -rf data/*.err
+	rm -f *.o bms2A bms2B
+
